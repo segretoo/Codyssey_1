@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "${HOST_PORT}:80"
+    environment:
+      - APP_ENV=dev
+    depends_on:
+      - cache
+
+  cache:
+    image: redis:alpine

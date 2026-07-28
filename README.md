@@ -687,3 +687,165 @@ To https://github.com/segretoo/Codyssey_1.git
 - 본 문서의 절대경로(`/Users/[user]/Desktop/Codyssey_1`)는 실습자 개인 환경 경로이며,
   재현 시에는 본인의 원하는 위치에 리포지토리를 clone하여 진행하면 된다.
 
+
+## 15) 보너스 1 — Docker Compose 기초 (단일 서비스)
+
+docker-compose.yml 작성
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "8083:80"
+```
+
+Compose로 빌드 및 실행
+```bash
+[user]@[host] Codyssey_1 % docker compose up -d
+[+] Building 0.9s (9/9) FINISHED
+ => [1/2] FROM docker.io/library/nginx:alpine                     0.0s
+ => CACHED [2/2] COPY site/ /usr/share/nginx/html/                0.0s
+ => => naming to docker.io/library/codyssey_1-web
+
+[+] Running 3/3
+ ✔ codyssey_1-web              Built
+ ✔ Network codyssey_1_default  Created
+ ✔ Container codyssey_1-web-1  Started
+```
+
+실행 상태 및 접속 확인
+```bash
+[user]@[host] Codyssey_1 % docker compose ps
+NAME               IMAGE            COMMAND                   SERVICE   CREATED          STATUS         PORTS
+codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       10 seconds ago   Up 9 seconds   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+
+[user]@[host] Codyssey_1 % curl http://localhost:8083
+<h1>Hello from my custom nginx</h1>
+```
+![8083 포트 Compose 접속 화면](./evidence/port-8083.png)
+
+→ `docker run` 대신 `docker-compose.yml`이라는 문서화된 설정 파일 하나로
+빌드+실행+포트매핑을 한 번에 처리할 수 있음을 확인했다. 명령줄로 매번 옵션을
+치는 대신, 실행 설정 자체가 파일로 기록되어 재사용/공유가 쉬워진다는 장점을 체감했다.
+
+## 16) 보너스 4 — 환경 변수 활용
+
+.env 파일로 호스트 포트 분리
+```bash
+[user]@[host] Codyssey_1 % echo "HOST_PORT=8083" > .env
+```
+
+docker-compose.yml에서 포트를 환경변수로 참조
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "${HOST_PORT}:80"
+    environment:
+      - APP_ENV=dev
+```
+
+1차: HOST_PORT=8083으로 재실행 및 접속 확인
+```bash
+[user]@[host] Codyssey_1 % docker compose down
+[+] Running 2/2
+ ✔ Container codyssey_1-web-1  Removed
+ ✔ Network codyssey_1_default  Removed
+
+[user]@[host] Codyssey_1 % docker compose up -d
+[+] Running 2/2
+ ✔ Network codyssey_1_default  Created
+ ✔ Container codyssey_1-web-1  Started
+
+[user]@[host] Codyssey_1 % docker compose ps
+NAME               IMAGE            COMMAND                   SERVICE   CREATED         STATUS         PORTS
+codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       5 seconds ago   Up 5 seconds   0.0.0.0:8083->80/tcp, [::]:8083->80/tcp
+
+[user]@[host] Codyssey_1 % curl http://localhost:8083
+<h1>Hello from my custom nginx</h1>
+```
+![8083 포트 접속 화면](./evidence/port-8083.png)
+
+2차: .env 값만 8084로 변경 후 재실행 (코드는 그대로, 설정만 변경)
+```bash
+[user]@[host] Codyssey_1 % echo "HOST_PORT=8084" > .env
+[user]@[host] Codyssey_1 % docker compose down
+[+] Running 2/2
+ ✔ Container codyssey_1-web-1  Removed
+ ✔ Network codyssey_1_default  Removed
+
+[user]@[host] Codyssey_1 % docker compose up -d
+[+] Running 2/2
+ ✔ Network codyssey_1_default  Created
+ ✔ Container codyssey_1-web-1  Started
+
+[user]@[host] Codyssey_1 % docker compose ps
+NAME               IMAGE            COMMAND                   SERVICE   CREATED         STATUS         PORTS
+codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       5 seconds ago   Up 4 seconds   0.0.0.0:8084->80/tcp, [::]:8084->80/tcp
+
+[user]@[host] Codyssey_1 % curl http://localhost:8084
+<h1>Hello from my custom nginx</h1>
+```
+![8084 포트 접속 화면](./evidence/port-8084.png)
+
+→ `docker-compose.yml` 코드는 전혀 건드리지 않고 `.env`의 `HOST_PORT` 값만
+바꿨는데도 실제 접속 포트가 8083 → 8084로 바뀌는 것을 확인했다. 이를 통해
+"설정"(포트, 모드 등)과 "코드"(빌드/실행 로직)가 분리되어 있으면, 코드를 재작성하지
+않고도 환경마다 다른 설정으로 손쉽게 배포할 수 있다는 것을 체감했다.
+
+## 17) 보너스 3 — Compose 운영 명령어 습득
+
+`up`, `down`, `ps`는 15~16번 과정에서 이미 여러 차례 사용했다
+(설정 변경 후 재시작하는 흐름에서 반복 활용).
+
+컨테이너 로그 확인
+```bash
+[user]@[host] Codyssey_1 % docker compose logs
+web-1  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+web-1  | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+web-1  | 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+web-1  | 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+web-1  | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+web-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: using the "epoll" event method
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: nginx/1.31.3
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: OS: Linux 6.17.8-orbstack-00308-g8f9c941121b1
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 20480:1048576
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker processes
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 31
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 32
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 33
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 34
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 35
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker process 36
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:14:59 +0000] "GET / HTTP/1.1" 200 36 "-" "curl/8.7.1" "-"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:07 +0000] "GET / HTTP/1.1" 200 36 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15" "-"
+web-1  | 2026/07/28 09:15:07 [error] 34#34: *2 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8084", referrer: "http://localhost:8084/"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:07 +0000] "GET /favicon.ico HTTP/1.1" 404 153 "http://localhost:8084/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.6 Safari/605.1.15" "-"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:10 +0000] "GET /apple-touch-icon-precomposed.png HTTP/1.1" 404 153 "-" "com.apple.WebKit.Networking/20621.3.11.11.3 Network/4277.140.33.703.1 macOS/15.7.4" "-"
+web-1  | 2026/07/28 09:15:10 [error] 31#31: *3 open() "/usr/share/nginx/html/apple-touch-icon-precomposed.png" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /apple-touch-icon-precomposed.png HTTP/1.1", host: "localhost:8084"
+web-1  | 2026/07/28 09:15:10 [error] 35#35: *4 open() "/usr/share/nginx/html/apple-touch-icon.png" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /apple-touch-icon.png HTTP/1.1", host: "localhost:8084"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:10 +0000] "GET /apple-touch-icon.png HTTP/1.1" 404 153 "-" "com.apple.WebKit.Networking/20621.3.11.11.3 Network/4277.140.33.703.1 macOS/15.7.4" "-"
+web-1  | 2026/07/28 09:15:10 [error] 35#35: *5 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8084"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:10 +0000] "GET /favicon.ico HTTP/1.1" 404 153 "-" "com.apple.WebKit.Networking/20621.3.11.11.3 Network/4277.140.33.703.1 macOS/15.7.4" "-"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET / HTTP/1.1" 200 36 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
+web-1  | 2026/07/28 09:15:14 [error] 33#33: *6 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8084", referrer: "http://localhost:8084/"
+web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET /favicon.ico HTTP/1.1" 404 555 "http://localhost:8084/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
+rkaakths01016683@c5r8s2 Codyssey_1 % 
+```
+→ `docker logs <컨테이너명>`과 달리 `docker compose logs`는 서비스 이름(`web-1`)이
+접두어로 붙어서 여러 서비스를 함께 운영할 때 로그 출처를 구분하기 쉬웠다. curl과
+브라우저로 접속했던 요청 기록(200 응답)이 그대로 남아있는 것을 확인했다.
+
+### 운영 명령어 요약
+| 명령어 | 역할 | 확인 내용 |
+|---|---|---|
+| `docker compose up -d` | 서비스 시작(빌드+실행) | 15, 16번에서 사용 |
+| `docker compose down` | 서비스 종료(컨테이너+네트워크 정리) | 16번에서 사용 |
+| `docker compose ps` | 서비스 상태 확인 | 15, 16번에서 사용 |
+| `docker compose logs` | 서비스 로그 확인 | 위에서 확인 |
