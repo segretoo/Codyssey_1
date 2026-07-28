@@ -687,6 +687,60 @@ To https://github.com/segretoo/Codyssey_1.git
 - 본 문서의 절대경로(`/Users/[user]/Desktop/Codyssey_1`)는 실습자 개인 환경 경로이며,
   재현 시에는 본인의 원하는 위치에 리포지토리를 clone하여 진행하면 된다.
 
+## 14-1) 트러블슈팅
+
+### 1) zsh 히스토리 확장(`!`) 에러
+
+**문제**
+```bash
+[user]@[host] Codyssey_1 % echo "<h1>bind mount updated!</h1>" > bindtest/index.html
+zsh: event not found: </h1>
+```
+
+**원인 가설**: zsh(그리고 bash도 동일)는 큰따옴표(`"`) 안에 있는 `!`를
+히스토리 확장(history expansion) 특수문자로 해석한다. 즉 `!`를 "이전 명령어를
+불러오라"는 명령으로 오해해서, 뒤에 오는 `</h1>`을 히스토리 검색어로 처리하려다
+실패한 것이다.
+
+**확인**: 동일한 문자열에서 `!`만 없는 경우(`bind mount test`)는 정상 동작했고,
+`!`가 포함된 문자열(`updated!`)에서만 에러가 발생하는 것을 비교하여 원인을 특정했다.
+
+**해결**: 작은따옴표(`'`)로 감싸면 셸이 내부 문자를 특수문자로 해석하지 않는다.
+```bash
+[user]@[host] Codyssey_1 % echo '<h1>bind mount updated!</h1>' > bindtest/index.html
+[user]@[host] Codyssey_1 % curl http://localhost:8082
+<h1>bind mount updated!</h1>
+```
+
+### 2) Git push non-fast-forward 충돌
+
+**문제**
+```bash
+[user]@[host] Codyssey_1 % git push origin main
+ ! [rejected]        main -> main (non-fast-forward)
+error: 레퍼런스를 'https://github.com/segretoo/Codyssey_1.git'에 푸시하는데 실패했습니다
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart.
+```
+
+**원인 가설**: 로컬 저장소와 GitHub 원격 저장소의 커밋 이력이 서로 다르게
+갈라져(diverged) 있어, 로컬 브랜치가 원격보다 최신이 아닌 상태였다.
+
+**확인**
+```bash
+[user]@[host] Codyssey_1 % git status
+현재 브랜치와 'origin/main'이(가) 갈라졌습니다,
+다른 커밋이 각각 2개와 1개 있습니다.
+```
+`git status`로 로컬 2개, 원격 1개의 서로 다른 커밋이 있음을 확인했다.
+
+**해결**: `git pull`로 원격 커밋을 먼저 병합한 뒤 재시도했다.
+```bash
+[user]@[host] Codyssey_1 % git pull origin main --no-rebase
+[user]@[host] Codyssey_1 % git push origin main
+```
+→ 병합(merge) 방식으로 두 이력을 합친 뒤 push가 정상적으로 성공했다.
+
 
 ## 15) 보너스 1 — Docker Compose 기초 (단일 서비스)
 
