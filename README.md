@@ -849,3 +849,141 @@ rkaakths01016683@c5r8s2 Codyssey_1 %
 | `docker compose down` | 서비스 종료(컨테이너+네트워크 정리) | 16번에서 사용 |
 | `docker compose ps` | 서비스 상태 확인 | 15, 16번에서 사용 |
 | `docker compose logs` | 서비스 로그 확인 | 위에서 확인 |
+
+## 18) 보너스 2 — Docker Compose 멀티 컨테이너
+
+docker-compose.yml에 웹 서버(web) + 보조 서비스(cache, redis) 추가
+```yaml
+services:
+  web:
+    build: .
+    ports:
+      - "${HOST_PORT}:80"
+    environment:
+      - APP_ENV=dev
+    depends_on:
+      - cache
+
+  cache:
+    image: redis:alpine
+```
+
+두 서비스 함께 실행
+```bash
+[user]@[host] Codyssey_1 % docker compose down
+[+] Running 2/2
+ ✔ Container codyssey_1-web-1  Removed
+ ✔ Network codyssey_1_default  Removed
+
+[user]@[host] Codyssey_1 % docker compose up -d
+[+] Running 8/8
+ ✔ cache Pulled
+   ✔ e6f31ffc071e Pull complete
+   ...
+[+] Running 3/3
+ ✔ Network codyssey_1_default    Created
+ ✔ Container codyssey_1-cache-1  Started
+ ✔ Container codyssey_1-web-1    Started
+```
+
+컨테이너 간 네트워크 통신 확인 (web → cache)
+```bash
+[user]@[host] Codyssey_1 % docker compose exec web sh
+/ # ping -c 3 cache
+PING cache (192.168.97.2): 56 data bytes
+64 bytes from 192.168.97.2: seq=0 ttl=64 time=0.060 ms
+64 bytes from 192.168.97.2: seq=1 ttl=64 time=0.069 ms
+64 bytes from 192.168.97.2: seq=2 ttl=64 time=0.112 ms
+
+--- cache ping statistics ---
+3 packets transmitted, 3 packets received, 0% packet loss
+round-trip min/avg/max = 0.060/0.080/0.112 ms
+/ # exit
+```
+
+→ `web` 컨테이너에서 `cache`라는 **서비스 이름만으로** IP(192.168.97.2)를 찾아
+정상적으로 통신할 수 있음을 확인했다. Compose가 서비스들을 자동으로 같은
+네트워크에 묶어주고, 컨테이너 IP를 직접 몰라도 서비스 이름으로 서로 찾을 수
+있게 해주는 서비스 디스커버리 기능을 체감했다.
+
+
+## 19) 보너스 5 — GitHub SSH 키 설정
+
+기존 SSH 키 확인 (없음 확인)
+```bash
+[user]@[host] Codyssey_1 % ls -al ~/.ssh
+total 8
+drwxr-xr-x   3 [user]  [user]   96  7 28 12:28 .
+drwxr-x---+ 24 [user]  [user]  768  7 28 17:47 ..
+-rw-r--r--   1 [user]  [user]  210  7 28 12:28 config
+```
+
+새 SSH 키 생성
+```bash
+[user]@[host] Codyssey_1 % ssh-keygen -t ed25519 -C "segreto8867@gmail.com"
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/Users/[user]/.ssh/id_ed25519): 
+Enter passphrase for "/Users/[user]/.ssh/id_ed25519" (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /Users/[user]/.ssh/id_ed25519
+Your public key has been saved in /Users/[user]/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:ql4SK/RmwzbzJTkuFTjF/2Oho+yo4yXZsTqaF686pdY segreto8867@gmail.com
+```
+
+SSH 에이전트에 키 등록
+```bash
+[user]@[host] Codyssey_1 % eval "$(ssh-agent -s)"
+Agent pid 34799
+[user]@[host] Codyssey_1 % ssh-add ~/.ssh/id_ed25519
+Identity added: /Users/[user]/.ssh/id_ed25519 (segreto8867@gmail.com)
+```
+
+공개키 확인 후 GitHub(Settings → SSH and GPG keys)에 등록
+```bash
+[user]@[host] Codyssey_1 % cat ~/.ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFQkh+EtSTJmChudTSMyQE9In8ryE99SXpKRr4FRJdm9 segreto8867@gmail.com
+```
+
+SSH 연결 테스트
+```bash
+[user]@[host] Codyssey_1 % ssh -T git@github.com
+The authenticity of host 'github.com (20.200.245.247)' can't be established.
+ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'github.com' (ED25519) to the list of known hosts.
+Hi segretoo! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+원격 저장소 URL을 HTTPS → SSH로 전환
+```bash
+[user]@[host] Codyssey_1 % git remote -v
+origin  https://github.com/segretoo/Codyssey_1.git (fetch)
+origin  https://github.com/segretoo/Codyssey_1.git (push)
+
+[user]@[host] Codyssey_1 % git remote set-url origin git@github.com:segretoo/Codyssey_1.git
+[user]@[host] Codyssey_1 % git remote -v
+origin  git@github.com:segretoo/Codyssey_1.git (fetch)
+origin  git@github.com:segretoo/Codyssey_1.git (push)
+```
+
+SSH로 push 테스트
+```bash
+[user]@[host] Codyssey_1 % git add .
+[user]@[host] Codyssey_1 % git commit -m "bonus: docker compose + ssh setup"
+[main e37e6a2] bonus: docker compose + ssh setup
+ 4 files changed, 175 insertions(+)
+ create mode 100644 .env
+ create mode 100644 docker-compose.yml
+
+[user]@[host] Codyssey_1 % git push origin main
+오브젝트 나열하는 중: 9, 완료.
+오브젝트 쓰는 중: 100% (6/6), 3.31 KiB | 3.31 MiB/s, 완료.
+To github.com:segretoo/Codyssey_1.git
+   178f4a6..e37e6a2  main -> main
+```
+
+→ HTTPS는 push할 때마다 사용자명/토큰 인증이 필요했지만, SSH 키 등록 후에는
+비밀번호나 토큰 입력 없이 곧바로 push가 성공하는 것을 확인했다. SSH는 공개키/
+개인키 쌍으로 신원을 증명하는 방식이라, 매번 자격 증명을 노출하지 않아도 되는
+보안상 이점이 있다는 것을 체감했다.
