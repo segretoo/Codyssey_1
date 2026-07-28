@@ -8,15 +8,17 @@
 - OS: macOS 15.7.4
 - Shell: zsh
 - Docker: 28.5.2
-- OrbStack: 2.0.5 
+- OrbStack: 2.0.5
 - Git: 2.53.0
 
+Docker 버전 확인
 ```bash
-$ docker --version
 [user]@[host] Codyssey_1 % docker --version
 Docker version 28.5.2, build ecc6942
+```
 
-$ git --version
+Git 버전 확인
+```bash
 [user]@[host] Codyssey_1 % git --version
 git version 2.53.0
 ```
@@ -678,3 +680,4 @@ To https://github.com/segretoo/Codyssey_1.git
 - 민감정보(비밀번호, 토큰, 개인정보 등)는 캡처/로그에서 마스킹 처리했다.
 - 본 문서의 절대경로(`/Users/[user]/Desktop/Codyssey_1`)는 실습자 개인 환경 경로이며,
   재현 시에는 본인의 원하는 위치에 리포지토리를 clone하여 진행하면 된다.
+
