@@ -23,6 +23,7 @@ Git 버전 확인
 git version 2.53.0
 ```
 
+
 ## 2) 수행 항목 체크리스트
 - [X] 터미널 기본 조작 (이동/목록/생성/복사/이동·이름변경/삭제/내용확인/빈파일생성)
 - [X] 권한 변경 실습 (파일 1개 + 디렉토리 1개, 변경 전/후 비교)
@@ -36,6 +37,7 @@ git version 2.53.0
 - [X] 바인드 마운트 반영 확인
 - [X] Docker 볼륨 생성/연결/영속성 검증
 - [X] Git 설정 및 GitHub 업로드
+
 
 ## 3) 터미널 조작 로그
 
@@ -95,6 +97,7 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 -rw-r--r--  1 [user]  [user]    16 Jul 28 13:11 memo.txt
 ```
 
+
 ## 4) 권한 실습 (변경 전/후 비교)
 
 ### 파일 권한
@@ -130,6 +133,7 @@ drwxr-xr-x  7 [user]  [user]  224 Jul 28 13:15 ..
 [user]@[host] mission1 % ls -ld perm_dir
 drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
 ```
+
 
 ## 5) Docker 설치 및 기본 점검
 
@@ -240,6 +244,7 @@ Server:
 WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
 ```
 
+
 ## 6) Docker 기본 운영 명령
 
 이미지 목록 확인 (pull 전)
@@ -324,6 +329,25 @@ e3931a032201   nginx-test   0.00%     5.223MiB / 15.67GiB   0.03%     1.66kB / 1
 CONTAINER ID   IMAGE          COMMAND                   CREATED         STATUS         PORTS     NAMES
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   80/tcp    nginx-test
 ```
+
+컨테이너 중지
+```bash
+[user]@[host] mission1 % docker stop nginx-test
+nginx-test
+
+[user]@[host] mission1 % docker ps -a
+CONTAINER ID   IMAGE          COMMAND                   CREATED       STATUS                     PORTS                                     NAMES
+a35655a9fdc4   ubuntu         "sleep infinity"          2 hours ago   Up 2 hours                                                           vol-test2
+e15f6d3329bd   my-web:1.0     "/docker-entrypoint.…"   2 hours ago   Up 2 hours                 0.0.0.0:8082->80/tcp, [::]:8082->80/tcp   bind-test
+10583ffb8961   my-web:1.0     "/docker-entrypoint.…"   2 hours ago   Up 2 hours                 0.0.0.0:8081->80/tcp, [::]:8081->80/tcp   my-web-8081
+905b67137103   my-web:1.0     "/docker-entrypoint.…"   2 hours ago   Up 2 hours                 0.0.0.0:8080->80/tcp, [::]:8080->80/tcp   my-web-8080
+3fc02772e02f   ubuntu         "bash"                    3 hours ago   Up 2 hours                                                           ubuntu-test
+3f30a7c1ad34   hello-world    "/hello"                  3 hours ago   Exited (0) 3 hours ago                                               busy_driscoll
+a6087a23c6e6   hello-world    "/hello"                  3 hours ago   Exited (0) 3 hours ago                                               xenodochial_shirley
+e3931a032201   nginx:alpine   "/docker-entrypoint.…"   3 hours ago   Exited (0) 7 seconds ago                                             nginx-test
+[user]@[host] mission1 %
+```
+
 
 ## 7) 컨테이너 실행 실습
 
@@ -447,6 +471,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 
 - 즉 attach는 메인 프로세스 자체에 다시 연결하는 것이고, exec는 실행 중인 컨테이너에
   별도의 프로세스를 얹어서 들어가는 것이라는 차이를 직접 확인했다.
 
+
 ## 8) 커스텀 Dockerfile 기반 이미지 제작
 
 - 선택한 베이스: nginx:alpine
@@ -502,6 +527,7 @@ COPY site/ /usr/share/nginx/html/
 
 ![커스텀 nginx 컨테이너 실행 결과](./evidence/port-8080.png)
 
+
 ## 9) 포트 매핑 및 접속 증거
 
 8080 포트 접속 확인
@@ -533,6 +559,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About an hour ago    Up
 → 동일한 이미지(`my-web:1.0`)를 서로 다른 포트(8080, 8081)로 두 개의 컨테이너를
 동시에 실행하여 각각 정상 접속되는 것을 확인했다.
 
+
 ## 10) 바인드 마운트 반영 확인
 
 로컬 마운트 폴더 준비 및 컨테이너 실행
@@ -561,6 +588,7 @@ e15f6d3329bd...
 → 컨테이너를 재시작하지 않고 로컬(`bindtest/index.html`)의 파일 내용만 수정했는데도
 바로 `curl` 응답에 반영되는 것을 확인했다. 이는 바인드 마운트가 컨테이너 내부 경로와
 호스트 폴더를 실시간으로 연결하고 있음을 증명한다.
+
 
 ## 11) Docker 볼륨 영속성 검증
 
@@ -595,32 +623,8 @@ hi
 컨테이너(`vol-test2`)에서도 동일한 데이터(`hi`)가 그대로 확인되어, 볼륨이
 컨테이너의 생명주기와 독립적으로 데이터를 영속시킨다는 것을 검증했다.
 
+
 ## 12) Git / GitHub 제출
-
-변경된 파일 상태 확인
-```bash
-[user]@[host] Codyssey_1 % git status
-현재 브랜치 main
-브랜치가 'origin/main'에 맞게 업데이트된 상태입니다.
-
-커밋하도록 정하지 않은 변경 사항:
-  (무엇을 커밋할지 바꾸려면 "git add <파일>..."을 사용하십시오)
-  (use "git restore <file>..." to discard changes in working directory)
-        수정함:        .DS_Store
-        수정함:        README.md
-        수정함:        codyssey/mission1/.DS_Store
-
-추적하지 않는 파일:
-  (커밋할 사항에 포함하려면 "git add <파일>..."을 사용하십시오)
-        .gitignore
-        Dockerfile
-        bindtest/
-        evidence/
-        site/
-
-커밋할 변경 사항을 추가하지 않았습니다 ("git add" 및/또는 "git commit -a"를
-사용하십시오)
-```
 
 변경 사항 스테이징 및 커밋
 ```bash
@@ -658,6 +662,7 @@ To https://github.com/segretoo/Codyssey_1.git
 
 - GitHub Repository 링크: https://github.com/segretoo/Codyssey_1
 
+
 ## 13) 검증 방법 요약
 
 아래는 각 수행 항목을 어떤 명령으로 검증했고, 그 결과를 README의 어느 섹션에서
@@ -674,6 +679,7 @@ To https://github.com/segretoo/Codyssey_1.git
 | 포트 매핑 | 호스트 포트로 컨테이너 내부 서비스에 접속되는지 (2회 이상) | `curl http://localhost:8080`, `:8081` | 9번 섹션 |
 | 바인드 마운트 | 로컬 파일 수정이 재시작 없이 컨테이너에 반영되는지 | `curl http://localhost:8082` (수정 전/후) | 10번 섹션 |
 | 볼륨 영속성 | 컨테이너 삭제 후에도 볼륨 데이터가 유지되는지 | 삭제 전/후 `cat /data/hello.txt` 비교 | 11번 섹션 |
+
 
 ## 14) 주의사항 / 재현성 노트
 - 본인 PC 환경에 종속된 경로(예: 홈 디렉토리 절대경로)가 있다면 여기에 대체 방법을 기재한다.
