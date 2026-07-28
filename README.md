@@ -836,7 +836,7 @@ web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:10 +0000] "GET /favicon.ico HTTP/1.
 web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET / HTTP/1.1" 200 36 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
 web-1  | 2026/07/28 09:15:14 [error] 33#33: *6 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8084", referrer: "http://localhost:8084/"
 web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET /favicon.ico HTTP/1.1" 404 555 "http://localhost:8084/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
-rkaakths01016683@c5r8s2 Codyssey_1 % 
+[user]@[host] Codyssey_1 % 
 ```
 → `docker logs <컨테이너명>`과 달리 `docker compose logs`는 서비스 이름(`web-1`)이
 접두어로 붙어서 여러 서비스를 함께 운영할 때 로그 출처를 구분하기 쉬웠다. curl과
