@@ -38,11 +38,9 @@ git version 2.53.0
 ## 3) 터미널 조작 로그
 
 ```bash
-$ pwd
 [user]@[host] Codyssey_1 % pwd
 /Users/[user]/Desktop/Codyssey_1
 
-$ ls -la
 [user]@[host] Codyssey_1 % ls -la
 total 16
 drwxr-xr-x   4 [user]  [user]   128 Jul 28 12:33 .
@@ -50,18 +48,10 @@ drwx------+  5 [user]  [user]   160 Jul 28 12:33 ..
 drwxr-xr-x  13 [user]  [user]   416 Jul 28 12:38 .git
 -rw-r--r--   1 [user]  [user]  6483 Jul 28 12:33 README.md
 
-$ mkdir -p codyssey/mission1
-$ cd codyssey/mission1
 [user]@[host] Codyssey_1 % mkdir -p codyssey/mission1
 [user]@[host] Codyssey_1 % cd codyssey/mission1
 [user]@[host] mission1 % 
 
-$ touch memo.txt
-$ echo "hello, codyssey" > memo.txt 
-$ cat memo.txt
-$ cp memo.txt memo_copy.txt
-$ mv memo_copy.txt memo_renamed.txt
-$ cat memo_renamed.txt
 [user]@[host] mission1 % touch memo.txt
 [user]@[host] mission1 % echo "hello, codyssey" > memo.txt
 [user]@[host] mission1 % cat memo.txt
@@ -71,9 +61,6 @@ hello, codyssey
 [user]@[host] mission1 % cat memo_renamed.txt
 hello, codyssey
 
-$ touch empty.txt
-$ rm memo_renamed.txt
-$ ls -la
 [user]@[host] mission1 % touch empty.txt
 [user]@[host] mission1 % rm memo_renamed.txt
 [user]@[host] mission1 % ls -la
@@ -89,14 +76,10 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 
 ### 파일 권한
 ```bash
-$ touch perm_test.txt
-$ ls -l perm_test.txt
 [user]@[host] mission1 % touch perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
 -rw-r--r--  1 [user]  [user]  0 Jul 28 13:13 perm_test.txt
 
-$ chmod 600 perm_test.txt
-$ ls -l perm_test.txt
 [user]@[host] mission1 % chmod 600 perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
 -rw-------  1 [user]  [user]  0 Jul 28 13:13 perm_test.txt
@@ -104,16 +87,12 @@ $ ls -l perm_test.txt
 
 ### 디렉토리 권한
 ```bash
-$ mkdir perm_dir
-$ ls -ld perm_dir
 [user]@[host] mission1 % mkdir perm_dir
 [user]@[host] mission1 % ls -la perm_dir
 total 0
 drwxr-xr-x  2 [user]  [user]   64 Jul 28 13:15 .
 drwxr-xr-x  7 [user]  [user]  224 Jul 28 13:15 ..
 
-$ chmod 700 perm_dir
-$ ls -ld perm_dir
 [user]@[host] mission1 % chmod 700 perm_dir
 [user]@[host] mission1 % ls -ld perm_dir
 drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
@@ -122,11 +101,9 @@ drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
 ## 5) Docker 설치 및 기본 점검
 
 ```bash
-$ docker --version
 [user]@[host] mission1 % docker --version
 Docker version 28.5.2, build ecc6942
 
-$ docker info
 [user]@[host] mission1 % docker info
 Client:
  Version:    28.5.2
@@ -229,11 +206,9 @@ WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
 ## 6) Docker 기본 운영 명령
 
 ```bash
-$ docker images
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
 
-$ docker pull nginx:alpine
 [user]@[host] mission1 % docker pull nginx:alpine
 alpine: Pulling from library/nginx
 55afa1ecc21d: Pull complete 
@@ -248,21 +223,17 @@ Digest: sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
 Status: Downloaded newer image for nginx:alpine
 docker.io/library/nginx:alpine
 
-$ docker images
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 nginx        alpine    f0ba77f796e5   12 days ago   62.4MB
 
-$ docker run -d --name nginx-test nginx:alpine
 [user]@[host] mission1 % docker run -d --name nginx-test nginx:alpine
 e3931a032201aed0ec19f2a5937b3d1f5fd0feba0f345cee254c0e72c8a7b668
 
-$ docker ps
 [user]@[host] mission1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED              STATUS              PORTS     NAMES
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    nginx-test
 
-$ docker logs nginx-test
 [user]@[host] mission1 % docker logs nginx-test
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
@@ -286,12 +257,10 @@ $ docker logs nginx-test
 2026/07/28 05:55:39 [notice] 1#1: start worker process 34
 2026/07/28 05:55:39 [notice] 1#1: start worker process 35
 
-$ docker stats --no-stream
 [user]@[host] mission1 % docker stats --no-stream
 CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O         PIDS
 e3931a032201   nginx-test   0.00%     5.223MiB / 15.67GiB   0.03%     1.66kB / 126B   10.3MB / 8.19kB   7
 
-$ docker ps -a
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED         STATUS         PORTS     NAMES
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   80/tcp    nginx-test
@@ -300,7 +269,6 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 mi
 ## 7) 컨테이너 실행 실습
 
 ```bash
-$ docker run hello-world
 [user]@[host] mission1 % docker run hello-world
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
@@ -329,7 +297,6 @@ Share images, automate workflows, and more with a free Docker ID:
 For more examples and ideas, visit:
  https://docs.docker.com/get-started/
 
-$ docker run -it --name ubuntu-test ubuntu bash
 [user]@[host] mission1 % docker run -it --name ubuntu-test ubuntu bash
 Unable to find image 'ubuntu:latest' locally
 latest: Pulling from library/ubuntu
@@ -563,12 +530,61 @@ hi
 ## 12) Git / GitHub 제출
 
 ```bash
-$ git init
-$ git add .
-$ git commit -m "1번 미션 제출: 터미널/권한/Docker 실습"
-$ git branch -M main
-$ git remote add origin <본인 저장소 URL>
-$ git push -u origin main
+rkaakths01016683@c5r8s2 Codyssey_1 % git status
+현재 브랜치 main
+브랜치가 'origin/main'에 맞게 업데이트된 상태입니다.
+
+커밋하도록 정하지 않은 변경 사항:
+  (무엇을 커밋할지 바꾸려면 "git add <파일>..."을 사용하십시오)
+  (use "git restore <file>..." to discard changes in working directory)
+        수정함:        .DS_Store
+        수정함:        README.md
+        수정함:        codyssey/mission1/.DS_Store
+
+추적하지 않는 파일:
+  (커밋할 사항에 포함하려면 "git add <파일>..."을 사용하십시오)
+        .gitignore
+        Dockerfile
+        bindtest/
+        evidence/
+        site/
+
+커밋할 변경 사항을 추가하지 않았습니다 ("git add" 및/또는 "git commit -a"를
+사용하십시오)
+rkaakths01016683@c5r8s2 Codyssey_1 % git add .
+rkaakths01016683@c5r8s2 Codyssey_1 % git commit -m "mission 1 upload"
+[main 1798889] mission 1 upload
+ Committer: 김문정 <rkaakths01016683@c5r8s2.codyssey.kr>
+이름과 전자메일 주소를 사용자 이름과 호스트 이름을 이용해서 자동으로
+설정했습니다. 이 정보가 맞는지 확인하십시오. 이 메시지를 보지 않으려면 정보를
+명시적으로 설정하십시오. 다음 명령어를 실행하고 편집기의 안내에 따라 설정
+파일을 편집하십시오:
+
+    git config --global --edit
+
+이렇게 한 다음, 이 커밋에 사용한 신원 정보를 다음과 같이 해서 바꿀 수 있습니다:
+
+    git commit --amend --reset-author
+
+ 11 files changed, 445 insertions(+), 85 deletions(-)
+ create mode 100644 .gitignore
+ create mode 100644 Dockerfile
+ create mode 100644 bindtest/index.html
+ create mode 100644 evidence/port-8080.png
+ create mode 100644 evidence/port-8081.png
+ create mode 100644 evidence/port-8082-updated.png
+ create mode 100644 evidence/port-8082.png
+ create mode 100644 site/index.html
+rkaakths01016683@c5r8s2 Codyssey_1 % git push origin main
+오브젝트 나열하는 중: 24, 완료.
+오브젝트 개수 세는 중: 100% (24/24), 완료.
+Delta compression using up to 6 threads
+오브젝트 압축하는 중: 100% (13/13), 완료.
+오브젝트 쓰는 중: 100% (18/18), 5.47 MiB | 10.25 MiB/s, 완료.
+Total 18 (delta 2), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+To https://github.com/segretoo/Codyssey_1.git
+   69d0e81..1798889  main -> main
 ```
 
 - GitHub Repository 링크: (여기에 링크)
@@ -588,3 +604,5 @@ $ git push -u origin main
 ## 14) 주의사항 / 재현성 노트
 - 본인 PC 환경에 종속된 경로(예: 홈 디렉토리 절대경로)가 있다면 여기에 대체 방법을 기재한다.
 - 민감정보(비밀번호, 토큰, 개인정보 등)는 캡처/로그에서 마스킹 처리했다.
+- 본 문서의 절대경로(`/Users/[user]/Desktop/Codyssey_1`)는 실습자 개인 환경 경로이며,
+  재현 시에는 본인의 원하는 위치에 리포지토리를 clone하여 진행하면 된다.
