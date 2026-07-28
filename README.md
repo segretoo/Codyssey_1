@@ -37,30 +37,51 @@ git version 2.53.0
 
 ## 3) 터미널 조작 로그
 
+현재 위치 확인
 ```bash
 [user]@[host] Codyssey_1 % pwd
 /Users/[user]/Desktop/Codyssey_1
+```
 
+목록 확인 (숨김 파일 포함)
+```bash
 [user]@[host] Codyssey_1 % ls -la
 total 16
 drwxr-xr-x   4 [user]  [user]   128 Jul 28 12:33 .
 drwx------+  5 [user]  [user]   160 Jul 28 12:33 ..
 drwxr-xr-x  13 [user]  [user]   416 Jul 28 12:38 .git
 -rw-r--r--   1 [user]  [user]  6483 Jul 28 12:33 README.md
+```
 
+디렉토리 생성 및 이동
+```bash
 [user]@[host] Codyssey_1 % mkdir -p codyssey/mission1
 [user]@[host] Codyssey_1 % cd codyssey/mission1
 [user]@[host] mission1 % 
+```
 
+빈 파일 생성 및 내용 작성/확인
+```bash
 [user]@[host] mission1 % touch memo.txt
 [user]@[host] mission1 % echo "hello, codyssey" > memo.txt
 [user]@[host] mission1 % cat memo.txt
 hello, codyssey
+```
+
+파일 복사
+```bash
 [user]@[host] mission1 % cp memo.txt memo_copy.txt
+```
+
+파일 이름 변경 (이동)
+```bash
 [user]@[host] mission1 % mv memo_copy.txt memo_renamed.txt
 [user]@[host] mission1 % cat memo_renamed.txt
 hello, codyssey
+```
 
+빈 파일 생성 및 삭제
+```bash
 [user]@[host] mission1 % touch empty.txt
 [user]@[host] mission1 % rm memo_renamed.txt
 [user]@[host] mission1 % ls -la
@@ -75,24 +96,34 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 ## 4) 권한 실습 (변경 전/후 비교)
 
 ### 파일 권한
+
+파일 생성 및 변경 전 권한 확인
 ```bash
 [user]@[host] mission1 % touch perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
 -rw-r--r--  1 [user]  [user]  0 Jul 28 13:13 perm_test.txt
+```
 
+권한 변경 (644 → 600) 후 재확인
+```bash
 [user]@[host] mission1 % chmod 600 perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
 -rw-------  1 [user]  [user]  0 Jul 28 13:13 perm_test.txt
 ```
 
 ### 디렉토리 권한
+
+디렉토리 생성 및 변경 전 권한 확인
 ```bash
 [user]@[host] mission1 % mkdir perm_dir
 [user]@[host] mission1 % ls -la perm_dir
 total 0
 drwxr-xr-x  2 [user]  [user]   64 Jul 28 13:15 .
 drwxr-xr-x  7 [user]  [user]  224 Jul 28 13:15 ..
+```
 
+권한 변경 (755 → 700) 후 재확인
+```bash
 [user]@[host] mission1 % chmod 700 perm_dir
 [user]@[host] mission1 % ls -ld perm_dir
 drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
@@ -100,10 +131,14 @@ drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
 
 ## 5) Docker 설치 및 기본 점검
 
+Docker 클라이언트 버전 확인
 ```bash
 [user]@[host] mission1 % docker --version
 Docker version 28.5.2, build ecc6942
+```
 
+Docker 데몬 동작 여부 확인
+```bash
 [user]@[host] mission1 % docker info
 Client:
  Version:    28.5.2
@@ -205,10 +240,14 @@ WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
 
 ## 6) Docker 기본 운영 명령
 
+이미지 목록 확인 (pull 전)
 ```bash
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
+```
 
+이미지 다운로드
+```bash
 [user]@[host] mission1 % docker pull nginx:alpine
 alpine: Pulling from library/nginx
 55afa1ecc21d: Pull complete 
@@ -222,18 +261,30 @@ d0008c891db4: Pull complete
 Digest: sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
 Status: Downloaded newer image for nginx:alpine
 docker.io/library/nginx:alpine
+```
 
+이미지 목록 재확인 (pull 후 반영 확인)
+```bash
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
 nginx        alpine    f0ba77f796e5   12 days ago   62.4MB
+```
 
+컨테이너 실행
+```bash
 [user]@[host] mission1 % docker run -d --name nginx-test nginx:alpine
 e3931a032201aed0ec19f2a5937b3d1f5fd0feba0f345cee254c0e72c8a7b668
+```
 
+실행 중인 컨테이너 목록 확인
+```bash
 [user]@[host] mission1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED              STATUS              PORTS     NAMES
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up About a minute   80/tcp    nginx-test
+```
 
+컨테이너 로그 확인
+```bash
 [user]@[host] mission1 % docker logs nginx-test
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
 /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
@@ -256,11 +307,17 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up
 2026/07/28 05:55:39 [notice] 1#1: start worker process 33
 2026/07/28 05:55:39 [notice] 1#1: start worker process 34
 2026/07/28 05:55:39 [notice] 1#1: start worker process 35
+```
 
+리소스 사용량 확인
+```bash
 [user]@[host] mission1 % docker stats --no-stream
 CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O         PIDS
 e3931a032201   nginx-test   0.00%     5.223MiB / 15.67GiB   0.03%     1.66kB / 126B   10.3MB / 8.19kB   7
+```
 
+전체 컨테이너 목록 확인 (종료된 것 포함)
+```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED         STATUS         PORTS     NAMES
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   80/tcp    nginx-test
@@ -268,6 +325,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 mi
 
 ## 7) 컨테이너 실행 실습
 
+hello-world 컨테이너 실행 성공 확인
 ```bash
 [user]@[host] mission1 % docker run hello-world
 Unable to find image 'hello-world:latest' locally
@@ -296,7 +354,10 @@ Share images, automate workflows, and more with a free Docker ID:
 
 For more examples and ideas, visit:
  https://docs.docker.com/get-started/
+```
 
+ubuntu 컨테이너 실행 후 내부 진입, 간단 명령(ls, echo) 수행
+```bash
 [user]@[host] mission1 % docker run -it --name ubuntu-test ubuntu bash
 Unable to find image 'ubuntu:latest' locally
 latest: Pulling from library/ubuntu
@@ -314,7 +375,7 @@ exit
 
 ### 컨테이너 종료/유지(attach vs exec) 관찰
 
-**1) 종료된 컨테이너 상태 확인**
+종료된 컨테이너 상태 확인 (exit 직후)
 ```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS                      PORTS     NAMES
@@ -323,9 +384,9 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS 
 a6087a23c6e6   hello-world    "/hello"                  32 minutes ago   Exited (0) 32 minutes ago             xenodochial_shirley
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   38 minutes ago   Up 38 minutes               80/tcp    nginx-test
 ```
-→ `ubuntu-test`가 `Exited` 상태인 것을 확인 (이전에 컨테이너 안에서 `exit` 쳐서 정지됨)
+→ `ubuntu-test`가 `Exited` 상태인 것을 확인 (컨테이너 안에서 `exit` 쳐서 정지됨)
 
-**2) `docker start -ai`로 attach 재진입**
+`docker start -ai`로 attach 재진입
 ```bash
 [user]@[host] mission1 % docker start -ai ubuntu-test
 root@3fc02772e02f:/# echo "attach reenter"
@@ -334,7 +395,7 @@ root@3fc02772e02f:/# exit
 exit
 ```
 
-**3) attach 종료 후 상태 재확인**
+attach 종료 후 상태 재확인
 ```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS                      PORTS     NAMES
@@ -344,7 +405,7 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS 
 → attach로 들어갔다가 `exit`을 치니 **컨테이너가 다시 Exited 상태**가 됨
 (메인 프로세스인 bash가 종료 = 컨테이너 자체가 정지)
 
-**4) 컨테이너를 백그라운드로 재시작**
+컨테이너를 백그라운드로 재시작
 ```bash
 [user]@[host] mission1 % docker start ubuntu-test
 ubuntu-test
@@ -356,7 +417,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   42 minutes ago   Up 42 
 ```
 → 이번엔 `-ai` 없이 시작해서 `ubuntu-test`가 **Up 상태로 백그라운드 유지**됨
 
-**5) `docker exec`로 접속**
+`docker exec`로 접속
 ```bash
 [user]@[host] mission1 % docker exec -it ubuntu-test bash
 root@3fc02772e02f:/# echo "exec enter"
@@ -365,7 +426,7 @@ root@3fc02772e02f:/# exit
 exit
 ```
 
-**6) exec 종료 후 상태 재확인**
+exec 종료 후 상태 재확인
 ```bash
 [user]@[host] mission1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS              PORTS     NAMES
@@ -373,24 +434,23 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS 
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 minutes       80/tcp    nginx-test
 ```
 → exec 셸에서 `exit`을 쳤는데도 **`ubuntu-test`는 여전히 Up 상태**로 살아있음
-(2~3번 attach 케이스와 정반대 결과)
+(attach 케이스와 정반대 결과)
 
 ### 관찰 정리
-- `docker start -ai`로 재진입한 뒤 컨테이너 내부에서 `exit`을 치면, 그건 **컨테이너의
-  메인 프로세스(PID 1, bash)를 종료**시키는 것이므로 컨테이너 자체도 즉시 Exited 상태가 됨
-  (2~3단계에서 확인).
-- `docker exec -it`는 이미 떠 있는 컨테이너에 **별도의 새 프로세스(bash)를 추가로 실행**해
+- `docker start -ai`로 재진입한 뒤 컨테이너 내부에서 `exit`을 치면, 그건 컨테이너의
+  메인 프로세스(PID 1, bash)를 종료시키는 것이므로 컨테이너 자체도 즉시 Exited 상태가 됨.
+- `docker exec -it`는 이미 떠 있는 컨테이너에 별도의 새 프로세스(bash)를 추가로 실행해
   접속하는 방식이라, 그 셸에서 `exit`을 쳐도 메인 프로세스는 그대로 살아있어 컨테이너가
-  계속 Up 상태로 유지됨 (5~6단계에서 확인).
-- 즉 **attach는 메인 프로세스 자체에 다시 연결하는 것**이고, **exec는 실행 중인 컨테이너에
-  별도의 프로세스를 얹어서 들어가는 것**이라는 차이를 직접 확인했다.
+  계속 Up 상태로 유지됨.
+- 즉 attach는 메인 프로세스 자체에 다시 연결하는 것이고, exec는 실행 중인 컨테이너에
+  별도의 프로세스를 얹어서 들어가는 것이라는 차이를 직접 확인했다.
 
 ## 8) 커스텀 Dockerfile 기반 이미지 제작
 
 - 선택한 베이스: nginx:alpine
 - 선택 이유: 정적 웹페이지만 서빙하면 되므로 가볍고 빠른 nginx:alpine을 선택
 
-### 정적 콘텐츠 준비
+정적 콘텐츠 파일 준비
 ```bash
 [user]@[host] Codyssey_1 % mkdir site
 [user]@[host] Codyssey_1 % touch site/index.html
@@ -399,7 +459,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 
 <h1>Hello from my custom nginx</h1>
 ```
 
-### Dockerfile
+Dockerfile 작성
 ```dockerfile
 FROM nginx:alpine
 LABEL org.opencontainers.image.title="my-custom-nginx"
@@ -414,7 +474,7 @@ COPY site/ /usr/share/nginx/html/
 | ENV APP_ENV=dev | 환경 구분용 변수 설정 |
 | COPY site/ | 기본 nginx 정적 콘텐츠를 커스텀 콘텐츠로 교체 |
 
-### 빌드/실행 명령 및 결과
+이미지 빌드
 ```bash
 [user]@[host] Codyssey_1 % docker build -t my-web:1.0 .
 [+] Building 2.2s (7/7) FINISHED
@@ -425,7 +485,10 @@ COPY site/ /usr/share/nginx/html/
  => [2/2] COPY site/ /usr/share/nginx/html/                       0.1s
  => exporting to image                                            0.2s
  => => naming to docker.io/library/my-web:1.0
+```
 
+컨테이너 실행 및 응답 확인
+```bash
 [user]@[host] Codyssey_1 % docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
 905b67137103...
 
@@ -439,14 +502,14 @@ COPY site/ /usr/share/nginx/html/
 
 ## 9) 포트 매핑 및 접속 증거
 
-### 8080 포트
+8080 포트 접속 확인
 ```bash
 [user]@[host] Codyssey_1 % curl http://localhost:8080
 <h1>Hello from my custom nginx</h1>
 ```
 ![8080 포트 접속 화면](./evidence/port-8080.png)
 
-### 8081 포트 (두 번째 접속 — 같은 이미지, 다른 포트로 재실행)
+동일 이미지를 다른 포트(8081)로 재실행 후 접속 확인 (두 번째 증거)
 ```bash
 [user]@[host] Codyssey_1 % docker run -d -p 8081:80 --name my-web-8081 my-web:1.0
 10583ffb8961...
@@ -456,7 +519,7 @@ COPY site/ /usr/share/nginx/html/
 ```
 ![8081 포트 접속 화면](./evidence/port-8081.png)
 
-### 두 컨테이너 동시 실행 확인
+두 컨테이너가 서로 다른 포트에서 동시에 실행 중인지 확인
 ```bash
 [user]@[host] Codyssey_1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED              STATUS              PORTS                                       NAMES
@@ -470,19 +533,22 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About an hour ago    Up
 
 ## 10) 바인드 마운트 반영 확인
 
-### 1) 로컬 마운트 폴더 준비 및 컨테이너 실행
+로컬 마운트 폴더 준비 및 컨테이너 실행
 ```bash
 [user]@[host] Codyssey_1 % mkdir bindtest
 [user]@[host] Codyssey_1 % echo "<h1>bind mount test</h1>" > bindtest/index.html
 [user]@[host] Codyssey_1 % docker run -d -p 8082:80 -v "$(pwd)/bindtest:/usr/share/nginx/html" --name bind-test my-web:1.0
 e15f6d3329bd...
+```
 
+초기 접속 확인
+```bash
 [user]@[host] Codyssey_1 % curl http://localhost:8082
 <h1>bind mount test</h1>
 ```
 ![8082 포트 초기 접속 화면](./evidence/port-8082.png)
 
-### 2) 로컬 파일 수정 후 재시작 없이 반영 확인
+로컬 파일 수정 후 컨테이너 재시작 없이 반영되는지 확인
 ```bash
 [user]@[host] Codyssey_1 % echo '<h1>bind mount updated!</h1>' > bindtest/index.html
 [user]@[host] Codyssey_1 % curl http://localhost:8082
@@ -496,7 +562,7 @@ e15f6d3329bd...
 
 ## 11) Docker 볼륨 영속성 검증
 
-### 1) 볼륨 생성 및 컨테이너에 연결, 데이터 쓰기
+볼륨 생성 및 컨테이너에 연결, 데이터 쓰기
 ```bash
 [user]@[host] Codyssey_1 % docker volume create mydata
 mydata
@@ -508,13 +574,13 @@ mydata
 hi
 ```
 
-### 2) 컨테이너 삭제
+컨테이너 삭제
 ```bash
 [user]@[host] Codyssey_1 % docker rm -f vol-test
 vol-test
 ```
 
-### 3) 새 컨테이너에 같은 볼륨 연결 후 데이터 확인
+새 컨테이너에 같은 볼륨을 연결해 데이터가 남아있는지 확인
 ```bash
 [user]@[host] Codyssey_1 % docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity
 a35655a9fdc4...
@@ -529,8 +595,9 @@ hi
 
 ## 12) Git / GitHub 제출
 
+변경된 파일 상태 확인
 ```bash
-rkaakths01016683@c5r8s2 Codyssey_1 % git status
+[user]@[host] Codyssey_1 % git status
 현재 브랜치 main
 브랜치가 'origin/main'에 맞게 업데이트된 상태입니다.
 
@@ -551,20 +618,16 @@ rkaakths01016683@c5r8s2 Codyssey_1 % git status
 
 커밋할 변경 사항을 추가하지 않았습니다 ("git add" 및/또는 "git commit -a"를
 사용하십시오)
-rkaakths01016683@c5r8s2 Codyssey_1 % git add .
-rkaakths01016683@c5r8s2 Codyssey_1 % git commit -m "mission 1 upload"
+```
+
+변경 사항 스테이징 및 커밋
+```bash
+[user]@[host] Codyssey_1 % git add .
+[user]@[host] Codyssey_1 % git commit -m "mission 1 upload"
 [main 1798889] mission 1 upload
- Committer: 김문정 <rkaakths01016683@c5r8s2.codyssey.kr>
+ Committer: [user] <[masked-email]>
 이름과 전자메일 주소를 사용자 이름과 호스트 이름을 이용해서 자동으로
-설정했습니다. 이 정보가 맞는지 확인하십시오. 이 메시지를 보지 않으려면 정보를
-명시적으로 설정하십시오. 다음 명령어를 실행하고 편집기의 안내에 따라 설정
-파일을 편집하십시오:
-
-    git config --global --edit
-
-이렇게 한 다음, 이 커밋에 사용한 신원 정보를 다음과 같이 해서 바꿀 수 있습니다:
-
-    git commit --amend --reset-author
+설정했습니다. 이 정보가 맞는지 확인하십시오.
 
  11 files changed, 445 insertions(+), 85 deletions(-)
  create mode 100644 .gitignore
@@ -575,7 +638,11 @@ rkaakths01016683@c5r8s2 Codyssey_1 % git commit -m "mission 1 upload"
  create mode 100644 evidence/port-8082-updated.png
  create mode 100644 evidence/port-8082.png
  create mode 100644 site/index.html
-rkaakths01016683@c5r8s2 Codyssey_1 % git push origin main
+```
+
+GitHub 원격 저장소에 push
+```bash
+[user]@[host] Codyssey_1 % git push origin main
 오브젝트 나열하는 중: 24, 완료.
 오브젝트 개수 세는 중: 100% (24/24), 완료.
 Delta compression using up to 6 threads
@@ -587,19 +654,24 @@ To https://github.com/segretoo/Codyssey_1.git
    69d0e81..1798889  main -> main
 ```
 
-- GitHub Repository 링크: (여기에 링크)
+- GitHub Repository 링크: https://github.com/segretoo/Codyssey_1
 
 ## 13) 검증 방법 요약
 
-| 항목 | 검증 명령 | 결과 위치 |
-|---|---|---|
-| Docker 설치 | `docker --version`, `docker info` | 5번 섹션 |
-| 이미지/컨테이너 | `docker images`, `docker ps -a` | 6번 섹션 |
-| hello-world | `docker run hello-world` | 7번 섹션 |
-| 커스텀 이미지 | `docker build`, `docker run` | 8번 섹션 |
-| 포트 매핑 | `curl http://localhost:8080` | 9번 섹션 |
-| 바인드 마운트 | `curl http://localhost:8082` | 10번 섹션 |
-| 볼륨 영속성 | 삭제 전/후 `cat` 비교 | 11번 섹션 |
+아래는 각 수행 항목을 어떤 명령으로 검증했고, 그 결과를 README의 어느 섹션에서
+확인할 수 있는지 정리한 표이다.
+
+| 항목 | 검증 내용 | 검증 명령 | 결과 위치 |
+|---|---|---|---|
+| 터미널 조작 | 폴더 이동/생성/복사/이름변경/삭제가 정상 동작하는지 | `pwd`, `ls -la`, `mkdir`, `cp`, `mv`, `rm` 등 | 3번 섹션 |
+| 권한 변경 | chmod 전/후 권한 비트가 실제로 바뀌었는지 | `chmod`, `ls -l` / `ls -ld` (전/후 비교) | 4번 섹션 |
+| Docker 설치 | Docker 클라이언트/데몬이 정상 동작하는지 | `docker --version`, `docker info` | 5번 섹션 |
+| 이미지/컨테이너 관리 | 이미지 목록·컨테이너 상태를 조회할 수 있는지 | `docker images`, `docker ps -a` | 6번 섹션 |
+| hello-world 실행 | 컨테이너가 정상적으로 실행되고 종료되는지 | `docker run hello-world` | 7번 섹션 |
+| 커스텀 이미지 빌드/실행 | 직접 작성한 Dockerfile로 이미지가 빌드되고 컨테이너가 뜨는지 | `docker build`, `docker run` | 8번 섹션 |
+| 포트 매핑 | 호스트 포트로 컨테이너 내부 서비스에 접속되는지 (2회 이상) | `curl http://localhost:8080`, `:8081` | 9번 섹션 |
+| 바인드 마운트 | 로컬 파일 수정이 재시작 없이 컨테이너에 반영되는지 | `curl http://localhost:8082` (수정 전/후) | 10번 섹션 |
+| 볼륨 영속성 | 컨테이너 삭제 후에도 볼륨 데이터가 유지되는지 | 삭제 전/후 `cat /data/hello.txt` 비교 | 11번 섹션 |
 
 ## 14) 주의사항 / 재현성 노트
 - 본인 PC 환경에 종속된 경로(예: 홈 디렉토리 절대경로)가 있다면 여기에 대체 방법을 기재한다.
