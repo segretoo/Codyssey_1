@@ -1,10 +1,36 @@
 # 1번 미션 — 터미널/권한/Docker/Git 실습
 
 ## 0) 프로젝트 개요 (미션 목표 요약)
+
 - 이 저장소는 터미널 기본 조작, 리눅스 파일 권한 실습, Docker 설치/운영, 커스텀 Dockerfile 제작,
   포트 매핑, 볼륨 영속성 검증, Git/GitHub 제출까지의 전 과정을 수행하고 기록한 결과물이다.
 
+## 0-1) 디렉토리 구조
+
+```
+Codyssey_1/
+├── README.md              # 본 기술 문서
+├── Dockerfile              # 커스텀 nginx 이미지 정의
+├── docker-compose.yml       # 보너스: Compose 설정
+├── .env                     # 보너스: 호스트 포트 환경변수
+├── .gitignore                # .DS_Store 등 제외 목록
+├── site/                     # 커스텀 이미지에 들어갈 정적 콘텐츠
+│   └── index.html
+├── bindtest/                 # 바인드 마운트 실습용 폴더
+│   └── index.html
+├── codyssey/mission1/         # 터미널/권한 실습용 폴더
+└── evidence/                  # 포트 접속 스크린샷 증거
+    ├── port-8080.png
+    ├── port-8081.png
+    └── ...
+```
+
+- **재현 절차**: 이 저장소를 clone한 뒤 최상단(`Codyssey_1/`)에서
+  `docker build -t my-web:1.0 .` → `docker run -d -p 8080:80 my-web:1.0`
+  순으로 실행하면 8~11번 섹션의 결과를 동일하게 재현할 수 있다.
+
 ## 1) 실행 환경
+
 - OS: macOS 15.7.4
 - Shell: zsh
 - Docker: 28.5.2
@@ -12,42 +38,57 @@
 - Git: 2.53.0
 
 Docker 버전 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker --version
 Docker version 28.5.2, build ecc6942
 ```
 
 Git 버전 확인
+
 ```bash
 [user]@[host] Codyssey_1 % git --version
 git version 2.53.0
 ```
 
-
 ## 2) 수행 항목 체크리스트
-- [X] 터미널 기본 조작 (이동/목록/생성/복사/이동·이름변경/삭제/내용확인/빈파일생성)
-- [X] 권한 변경 실습 (파일 1개 + 디렉토리 1개, 변경 전/후 비교)
-- [X] Docker 설치/점검 (`docker --version`, `docker info`)
-- [X] Docker 기본 운영 명령 (images/ps/logs/stats)
-- [X] hello-world 실행
-- [x] ubuntu 컨테이너 진입 및 명령 수행 (ls, echo)
-- [X] 컨테이너 종료/유지(attach vs exec) 관찰 정리
-- [X] 커스텀 Dockerfile 작성 및 이미지 빌드/실행
-- [X] 포트 매핑 및 접속 증거 (2회 이상)
-- [X] 바인드 마운트 반영 확인
-- [X] Docker 볼륨 생성/연결/영속성 검증
-- [X] Git 설정 및 GitHub 업로드
 
+- [x] 터미널 기본 조작 (이동/목록/생성/복사/이동·이름변경/삭제/내용확인/빈파일생성)
+- [x] 권한 변경 실습 (파일 1개 + 디렉토리 1개, 변경 전/후 비교)
+- [x] Docker 설치/점검 (`docker --version`, `docker info`)
+- [x] Docker 기본 운영 명령 (images/ps/logs/stats)
+- [x] hello-world 실행
+- [x] ubuntu 컨테이너 진입 및 명령 수행 (ls, echo)
+- [x] 컨테이너 종료/유지(attach vs exec) 관찰 정리
+- [x] 커스텀 Dockerfile 작성 및 이미지 빌드/실행
+- [x] 포트 매핑 및 접속 증거 (2회 이상)
+- [x] 바인드 마운트 반영 확인
+- [x] Docker 볼륨 생성/연결/영속성 검증
+- [x] Git 설정 및 GitHub 업로드
+
+### 참고: 절대경로 vs 상대경로
+
+- **절대경로**: 루트(`/`)부터 시작하는 전체 경로. 어디서 실행하든 항상 동일한 위치를 가리킨다.
+  예: `/Users/[user]/Desktop/Codyssey_1`
+- **상대경로**: 현재 작업 위치(`pwd` 기준)에 따라 달라지는 경로.
+  예: `mission1` 폴더 안에서 `cd ..`를 치면 `Codyssey_1`로 이동하지만,
+  다른 위치에서 같은 명령을 치면 전혀 다른 곳으로 이동한다.
+- **선택 기준**: 스크립트나 문서에서 재현성을 보장하려면 절대경로가 안전하고,
+  같은 프로젝트 내부에서 짧게 이동할 때는 상대경로가 편리하다. 이 실습에서는
+  홈 디렉토리 하위에 상대경로로 폴더를 구성해, 다른 사용자가 자신의 홈 디렉토리
+  기준으로 그대로 재현할 수 있도록 했다.
 
 ## 3) 터미널 조작 로그
 
 현재 위치 확인
+
 ```bash
 [user]@[host] Codyssey_1 % pwd
 /Users/[user]/Desktop/Codyssey_1
 ```
 
 목록 확인 (숨김 파일 포함)
+
 ```bash
 [user]@[host] Codyssey_1 % ls -la
 total 16
@@ -58,13 +99,15 @@ drwxr-xr-x  13 [user]  [user]   416 Jul 28 12:38 .git
 ```
 
 디렉토리 생성 및 이동
+
 ```bash
 [user]@[host] Codyssey_1 % mkdir -p codyssey/mission1
 [user]@[host] Codyssey_1 % cd codyssey/mission1
-[user]@[host] mission1 % 
+[user]@[host] mission1 %
 ```
 
 빈 파일 생성 및 내용 작성/확인
+
 ```bash
 [user]@[host] mission1 % touch memo.txt
 [user]@[host] mission1 % echo "hello, codyssey" > memo.txt
@@ -73,11 +116,13 @@ hello, codyssey
 ```
 
 파일 복사
+
 ```bash
 [user]@[host] mission1 % cp memo.txt memo_copy.txt
 ```
 
 파일 이름 변경 (이동)
+
 ```bash
 [user]@[host] mission1 % mv memo_copy.txt memo_renamed.txt
 [user]@[host] mission1 % cat memo_renamed.txt
@@ -85,6 +130,7 @@ hello, codyssey
 ```
 
 빈 파일 생성 및 삭제
+
 ```bash
 [user]@[host] mission1 % touch empty.txt
 [user]@[host] mission1 % rm memo_renamed.txt
@@ -97,12 +143,29 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 -rw-r--r--  1 [user]  [user]    16 Jul 28 13:11 memo.txt
 ```
 
-
 ## 4) 권한 실습 (변경 전/후 비교)
+
+### 참고: 파일 권한 표기 규칙
+
+리눅스 파일 권한은 **소유자(owner) / 그룹(group) / 기타(other)** 3그룹에
+각각 **읽기(r=4) / 쓰기(w=2) / 실행(x=1)** 권한을 부여하는 방식이다.
+숫자는 이 값들의 합으로 표현한다.
+
+| 숫자 | 의미                 | 계산  |
+| ---- | -------------------- | ----- |
+| 7    | rwx (읽기+쓰기+실행) | 4+2+1 |
+| 6    | rw- (읽기+쓰기)      | 4+2   |
+| 4    | r-- (읽기만)         | 4     |
+| 0    | --- (권한 없음)      | 0     |
+
+- `644`: 소유자는 읽기+쓰기(6), 그룹/기타는 읽기만(4) — 일반 파일 기본값
+- `755`: 소유자는 전부(7), 그룹/기타는 읽기+실행(5) — 디렉토리·실행 파일 기본값
+- `700`: 소유자만 전부(7), 그룹/기타는 아무 권한 없음(0) — 완전 비공개
 
 ### 파일 권한
 
 파일 생성 및 변경 전 권한 확인
+
 ```bash
 [user]@[host] mission1 % touch perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
@@ -110,6 +173,7 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 ```
 
 권한 변경 (644 → 600) 후 재확인
+
 ```bash
 [user]@[host] mission1 % chmod 600 perm_test.txt
 [user]@[host] mission1 % ls -l perm_test.txt
@@ -119,6 +183,7 @@ drwxr-xr-x  4 [user]  [user]   128 Jul 28 13:11 ..
 ### 디렉토리 권한
 
 디렉토리 생성 및 변경 전 권한 확인
+
 ```bash
 [user]@[host] mission1 % mkdir perm_dir
 [user]@[host] mission1 % ls -la perm_dir
@@ -128,22 +193,24 @@ drwxr-xr-x  7 [user]  [user]  224 Jul 28 13:15 ..
 ```
 
 권한 변경 (755 → 700) 후 재확인
+
 ```bash
 [user]@[host] mission1 % chmod 700 perm_dir
 [user]@[host] mission1 % ls -ld perm_dir
 drwx------  2 [user]  [user]  64 Jul 28 13:15 perm_dir
 ```
 
-
 ## 5) Docker 설치 및 기본 점검
 
 Docker 클라이언트 버전 확인
+
 ```bash
 [user]@[host] mission1 % docker --version
 Docker version 28.5.2, build ecc6942
 ```
 
 Docker 데몬 동작 여부 확인
+
 ```bash
 [user]@[host] mission1 % docker info
 Client:
@@ -244,33 +311,35 @@ Server:
 WARNING: DOCKER_INSECURE_NO_IPTABLES_RAW is set
 ```
 
-
 ## 6) Docker 기본 운영 명령
 
 이미지 목록 확인 (pull 전)
+
 ```bash
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID   CREATED   SIZE
 ```
 
 이미지 다운로드
+
 ```bash
 [user]@[host] mission1 % docker pull nginx:alpine
 alpine: Pulling from library/nginx
-55afa1ecc21d: Pull complete 
-3cd534fe98c6: Pull complete 
-1223f016b4e4: Pull complete 
-62bec68d7c31: Pull complete 
-46f977ee452f: Pull complete 
-d0008c891db4: Pull complete 
-390dc935348d: Pull complete 
-46519e7231d2: Pull complete 
+55afa1ecc21d: Pull complete
+3cd534fe98c6: Pull complete
+1223f016b4e4: Pull complete
+62bec68d7c31: Pull complete
+46f977ee452f: Pull complete
+d0008c891db4: Pull complete
+390dc935348d: Pull complete
+46519e7231d2: Pull complete
 Digest: sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
 Status: Downloaded newer image for nginx:alpine
 docker.io/library/nginx:alpine
 ```
 
 이미지 목록 재확인 (pull 후 반영 확인)
+
 ```bash
 [user]@[host] mission1 % docker images
 REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
@@ -278,12 +347,14 @@ nginx        alpine    f0ba77f796e5   12 days ago   62.4MB
 ```
 
 컨테이너 실행
+
 ```bash
 [user]@[host] mission1 % docker run -d --name nginx-test nginx:alpine
 e3931a032201aed0ec19f2a5937b3d1f5fd0feba0f345cee254c0e72c8a7b668
 ```
 
 실행 중인 컨테이너 목록 확인
+
 ```bash
 [user]@[host] mission1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED              STATUS              PORTS     NAMES
@@ -291,6 +362,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up
 ```
 
 컨테이너 로그 확인
+
 ```bash
 [user]@[host] mission1 % docker logs nginx-test
 /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
@@ -304,7 +376,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up
 /docker-entrypoint.sh: Configuration complete; ready for start up
 2026/07/28 05:55:39 [notice] 1#1: using the "epoll" event method
 2026/07/28 05:55:39 [notice] 1#1: nginx/1.31.3
-2026/07/28 05:55:39 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+2026/07/28 05:55:39 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0)
 2026/07/28 05:55:39 [notice] 1#1: OS: Linux 6.17.8-orbstack-00308-g8f9c941121b1
 2026/07/28 05:55:39 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 20480:1048576
 2026/07/28 05:55:39 [notice] 1#1: start worker processes
@@ -317,6 +389,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About a minute ago   Up
 ```
 
 리소스 사용량 확인
+
 ```bash
 [user]@[host] mission1 % docker stats --no-stream
 CONTAINER ID   NAME         CPU %     MEM USAGE / LIMIT     MEM %     NET I/O         BLOCK I/O         PIDS
@@ -324,6 +397,7 @@ e3931a032201   nginx-test   0.00%     5.223MiB / 15.67GiB   0.03%     1.66kB / 1
 ```
 
 전체 컨테이너 목록 확인 (종료된 것 포함)
+
 ```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED         STATUS         PORTS     NAMES
@@ -331,6 +405,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 mi
 ```
 
 컨테이너 중지
+
 ```bash
 [user]@[host] mission1 % docker stop nginx-test
 nginx-test
@@ -348,15 +423,15 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   3 hours ago   Exited (0
 [user]@[host] mission1 %
 ```
 
-
 ## 7) 컨테이너 실행 실습
 
 hello-world 컨테이너 실행 성공 확인
+
 ```bash
 [user]@[host] mission1 % docker run hello-world
 Unable to find image 'hello-world:latest' locally
 latest: Pulling from library/hello-world
-4f55086f7dd0: Pull complete 
+4f55086f7dd0: Pull complete
 Digest: sha256:c3cbe1cc1aa588a64951ac6286e0df7b27fe2e6324b1001c619bb358770c0178
 Status: Downloaded newer image for hello-world:latest
 
@@ -383,12 +458,13 @@ For more examples and ideas, visit:
 ```
 
 ubuntu 컨테이너 실행 후 내부 진입, 간단 명령(ls, echo) 수행
+
 ```bash
 [user]@[host] mission1 % docker run -it --name ubuntu-test ubuntu bash
 Unable to find image 'ubuntu:latest' locally
 latest: Pulling from library/ubuntu
-ed819469700f: Pull complete 
-a3679419df18: Pull complete 
+ed819469700f: Pull complete
+a3679419df18: Pull complete
 Digest: sha256:3131b4cc82a783df6c9df078f86e01819a13594b865c2cad47bd1bca2b7063bb
 Status: Downloaded newer image for ubuntu:latest
 root@3fc02772e02f:/# ls
@@ -402,6 +478,7 @@ exit
 ### 컨테이너 종료/유지(attach vs exec) 관찰
 
 종료된 컨테이너 상태 확인 (exit 직후)
+
 ```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS                      PORTS     NAMES
@@ -410,9 +487,11 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS 
 a6087a23c6e6   hello-world    "/hello"                  32 minutes ago   Exited (0) 32 minutes ago             xenodochial_shirley
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   38 minutes ago   Up 38 minutes               80/tcp    nginx-test
 ```
+
 → `ubuntu-test`가 `Exited` 상태인 것을 확인 (컨테이너 안에서 `exit` 쳐서 정지됨)
 
 `docker start -ai`로 attach 재진입
+
 ```bash
 [user]@[host] mission1 % docker start -ai ubuntu-test
 root@3fc02772e02f:/# echo "attach reenter"
@@ -422,16 +501,19 @@ exit
 ```
 
 attach 종료 후 상태 재확인
+
 ```bash
 [user]@[host] mission1 % docker ps -a
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS                      PORTS     NAMES
 3fc02772e02f   ubuntu         "bash"                    35 minutes ago   Exited (0) 43 seconds ago             ubuntu-test
 ...
 ```
+
 → attach로 들어갔다가 `exit`을 치니 **컨테이너가 다시 Exited 상태**가 됨
 (메인 프로세스인 bash가 종료 = 컨테이너 자체가 정지)
 
 컨테이너를 백그라운드로 재시작
+
 ```bash
 [user]@[host] mission1 % docker start ubuntu-test
 ubuntu-test
@@ -441,9 +523,11 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS 
 3fc02772e02f   ubuntu         "bash"                    36 minutes ago   Up 57 seconds             ubuntu-test
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   42 minutes ago   Up 42 minutes   80/tcp    nginx-test
 ```
+
 → 이번엔 `-ai` 없이 시작해서 `ubuntu-test`가 **Up 상태로 백그라운드 유지**됨
 
 `docker exec`로 접속
+
 ```bash
 [user]@[host] mission1 % docker exec -it ubuntu-test bash
 root@3fc02772e02f:/# echo "exec enter"
@@ -453,16 +537,29 @@ exit
 ```
 
 exec 종료 후 상태 재확인
+
 ```bash
 [user]@[host] mission1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED          STATUS              PORTS     NAMES
 3fc02772e02f   ubuntu         "bash"                    37 minutes ago   Up About a minute             ubuntu-test
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 minutes       80/tcp    nginx-test
 ```
+
 → exec 셸에서 `exit`을 쳤는데도 **`ubuntu-test`는 여전히 Up 상태**로 살아있음
 (attach 케이스와 정반대 결과)
 
+### attach vs exec 옵션(`-ai`) 보충 설명
+
+`docker start`에서 `-a`(attach)는 컨테이너의 표준 출력에 내 터미널을 연결해
+화면에 결과가 보이게 하는 옵션이고, `-i`(interactive)는 표준 입력을 열어
+내가 키보드로 입력한 내용이 컨테이너 안으로 전달되게 하는 옵션이다. 이 둘을
+함께 써야(`-ai`) 실제로 터미널처럼 상호작용할 수 있다. `docker start`(옵션 없음)는
+그냥 백그라운드로 켜기만 해서 화면에 아무 반응이 없고, `docker exec -it`는
+아예 별도의 새로운 프로세스를 컨테이너 안에 추가로 실행하는 것이라
+attach 방식과는 접근 경로 자체가 다르다.
+
 ### 관찰 정리
+
 - `docker start -ai`로 재진입한 뒤 컨테이너 내부에서 `exit`을 치면, 그건 컨테이너의
   메인 프로세스(PID 1, bash)를 종료시키는 것이므로 컨테이너 자체도 즉시 Exited 상태가 됨.
 - `docker exec -it`는 이미 떠 있는 컨테이너에 별도의 새 프로세스(bash)를 추가로 실행해
@@ -471,13 +568,26 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 
 - 즉 attach는 메인 프로세스 자체에 다시 연결하는 것이고, exec는 실행 중인 컨테이너에
   별도의 프로세스를 얹어서 들어가는 것이라는 차이를 직접 확인했다.
 
-
 ## 8) 커스텀 Dockerfile 기반 이미지 제작
 
+### 참고: 이미지 vs 컨테이너
+
+- **이미지(Image)**: 실행에 필요한 파일·설정을 담은 **불변(immutable)의 설계도**.
+  한 번 빌드하면 내용이 바뀌지 않는다.
+- **컨테이너(Container)**: 이미지를 실제로 **실행한 인스턴스**. 같은 이미지로
+  여러 개의 컨테이너를 동시에 만들 수 있다 (예: 9번 섹션에서 `my-web:1.0` 이미지
+  하나로 `my-web-8080`, `my-web-8081` 두 컨테이너를 동시에 실행).
+- 컨테이너 내부에서 파일을 바꿔도 **원본 이미지는 변하지 않으며**, 컨테이너를
+  삭제하면 그 안의 변경사항도 함께 사라진다. 컨테이너에 반영된 변경을 영구히
+  남기려면 이미지를 다시 빌드(`docker build`)하거나 볼륨/바인드 마운트를 사용해야 한다.
+
 - 선택한 베이스: nginx:alpine
-- 선택 이유: 정적 웹페이지만 서빙하면 되므로 가볍고 빠른 nginx:alpine을 선택
+- 선택 이유: 정적 웹페이지만 서빙하면 되므로 가볍고 빠른 nginx:alpine을 선택.
+  `nginx`(기본)는 Debian 기반이라 용량이 크고, `nginx:alpine`은 Alpine Linux
+  기반이라 필요한 최소한만 담겨 있어 이미지 용량이 훨씬 작다(실습에서 62.4MB).
 
 정적 콘텐츠 파일 준비
+
 ```bash
 [user]@[host] Codyssey_1 % mkdir site
 [user]@[host] Codyssey_1 % touch site/index.html
@@ -487,6 +597,7 @@ e3931a032201   nginx:alpine   "/docker-entrypoint.…"   43 minutes ago   Up 43 
 ```
 
 Dockerfile 작성
+
 ```dockerfile
 FROM nginx:alpine
 LABEL org.opencontainers.image.title="my-custom-nginx"
@@ -495,13 +606,15 @@ COPY site/ /usr/share/nginx/html/
 ```
 
 ### 적용한 커스텀 포인트와 목적
-| 커스텀 포인트 | 목적 |
-|---|---|
-| LABEL 추가 | 이미지 메타데이터로 식별 용이 |
-| ENV APP_ENV=dev | 환경 구분용 변수 설정 |
-| COPY site/ | 기본 nginx 정적 콘텐츠를 커스텀 콘텐츠로 교체 |
+
+| 커스텀 포인트   | 목적                                                                |
+| --------------- | ------------------------------------------------------------------- |
+| LABEL 추가      | 이미지 메타데이터로 식별 용이 (실제 동작에는 영향 없는 이름표 역할) |
+| ENV APP_ENV=dev | 환경 구분용 변수를 컨테이너 내부에 주입 (설정과 코드 분리)          |
+| COPY site/      | 기본 nginx 정적 콘텐츠를 커스텀 콘텐츠로 교체                       |
 
 이미지 빌드
+
 ```bash
 [user]@[host] Codyssey_1 % docker build -t my-web:1.0 .
 [+] Building 2.2s (7/7) FINISHED
@@ -515,6 +628,7 @@ COPY site/ /usr/share/nginx/html/
 ```
 
 컨테이너 실행 및 응답 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
 905b67137103...
@@ -522,22 +636,46 @@ COPY site/ /usr/share/nginx/html/
 [user]@[host] Codyssey_1 % curl http://localhost:8080
 <h1>Hello from my custom nginx</h1>
 ```
+
 → 빌드 성공(`naming to ... my-web:1.0`) 및 컨테이너 실행 성공, curl 응답으로
 커스텀 콘텐츠가 정상 반영된 것을 확인했다.
 
 ![커스텀 nginx 컨테이너 실행 결과](./evidence/port-8080.png)
 
-
 ## 9) 포트 매핑 및 접속 증거
 
+### 참고: 포트 매핑이 필요한 이유
+
+컨테이너는 호스트와 분리된 자체 네트워크 네임스페이스에서 동작하기 때문에,
+컨테이너 내부의 포트(예: 80번)는 기본적으로 호스트에서 접근할 수 없다.
+`-p <host_port>:<container_port>`로 명시적으로 연결해야만 호스트에서
+`curl`이나 브라우저로 접속할 수 있다. 이는 컨테이너를 서로 격리시켜 보안을
+확보하면서, 필요한 포트만 최소한으로 외부에 노출하기 위한 설계이다.
+
+### 참고: 포트 충돌 진단 방법
+
+같은 호스트 포트를 다시 쓰려고 하면 `docker run`이 실패하는데, 이때는
+아래 순서로 확인한다.
+
+```bash
+lsof -i :8080          # 8080번 포트를 사용 중인 프로세스 확인
+docker ps               # 혹시 같은 포트를 쓰는 컨테이너가 이미 떠 있는지 확인
+```
+
+사용 중이면 다른 포트 번호로 변경하거나, 기존 프로세스/컨테이너를 종료한 뒤
+재시도한다.
+
 8080 포트 접속 확인
+
 ```bash
 [user]@[host] Codyssey_1 % curl http://localhost:8080
 <h1>Hello from my custom nginx</h1>
 ```
+
 ![8080 포트 접속 화면](./evidence/port-8080.png)
 
 동일 이미지를 다른 포트(8081)로 재실행 후 접속 확인 (두 번째 증거)
+
 ```bash
 [user]@[host] Codyssey_1 % docker run -d -p 8081:80 --name my-web-8081 my-web:1.0
 10583ffb8961...
@@ -545,9 +683,11 @@ COPY site/ /usr/share/nginx/html/
 [user]@[host] Codyssey_1 % curl http://localhost:8081
 <h1>Hello from my custom nginx</h1>
 ```
+
 ![8081 포트 접속 화면](./evidence/port-8081.png)
 
 두 컨테이너가 서로 다른 포트에서 동시에 실행 중인지 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker ps
 CONTAINER ID   IMAGE          COMMAND                   CREATED              STATUS              PORTS                                       NAMES
@@ -556,13 +696,14 @@ CONTAINER ID   IMAGE          COMMAND                   CREATED              STA
 3fc02772e02f   ubuntu         "bash"                    About an hour ago    Up 33 minutes                                                 ubuntu-test
 e3931a032201   nginx:alpine   "/docker-entrypoint.…"   About an hour ago    Up About an hour    80/tcp                                     nginx-test
 ```
+
 → 동일한 이미지(`my-web:1.0`)를 서로 다른 포트(8080, 8081)로 두 개의 컨테이너를
 동시에 실행하여 각각 정상 접속되는 것을 확인했다.
-
 
 ## 10) 바인드 마운트 반영 확인
 
 로컬 마운트 폴더 준비 및 컨테이너 실행
+
 ```bash
 [user]@[host] Codyssey_1 % mkdir bindtest
 [user]@[host] Codyssey_1 % echo "<h1>bind mount test</h1>" > bindtest/index.html
@@ -571,28 +712,32 @@ e15f6d3329bd...
 ```
 
 초기 접속 확인
+
 ```bash
 [user]@[host] Codyssey_1 % curl http://localhost:8082
 <h1>bind mount test</h1>
 ```
+
 ![8082 포트 초기 접속 화면](./evidence/port-8082.png)
 
 로컬 파일 수정 후 컨테이너 재시작 없이 반영되는지 확인
+
 ```bash
 [user]@[host] Codyssey_1 % echo '<h1>bind mount updated!</h1>' > bindtest/index.html
 [user]@[host] Codyssey_1 % curl http://localhost:8082
 <h1>bind mount updated!</h1>
 ```
+
 ![8082 포트 로컬 수정 반영 화면](./evidence/port-8082-updated.png)
 
 → 컨테이너를 재시작하지 않고 로컬(`bindtest/index.html`)의 파일 내용만 수정했는데도
 바로 `curl` 응답에 반영되는 것을 확인했다. 이는 바인드 마운트가 컨테이너 내부 경로와
 호스트 폴더를 실시간으로 연결하고 있음을 증명한다.
 
-
 ## 11) Docker 볼륨 영속성 검증
 
 볼륨 생성 및 컨테이너에 연결, 데이터 쓰기
+
 ```bash
 [user]@[host] Codyssey_1 % docker volume create mydata
 mydata
@@ -605,12 +750,14 @@ hi
 ```
 
 컨테이너 삭제
+
 ```bash
 [user]@[host] Codyssey_1 % docker rm -f vol-test
 vol-test
 ```
 
 새 컨테이너에 같은 볼륨을 연결해 데이터가 남아있는지 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity
 a35655a9fdc4...
@@ -623,10 +770,27 @@ hi
 컨테이너(`vol-test2`)에서도 동일한 데이터(`hi`)가 그대로 확인되어, 볼륨이
 컨테이너의 생명주기와 독립적으로 데이터를 영속시킨다는 것을 검증했다.
 
+### 참고: 볼륨 백업/복원 방법
+
+볼륨 자체도 호스트 디스크 장애 시 유실될 수 있으므로, 정기적인 백업이 권장된다.
+
+```bash
+# 볼륨 데이터를 tar로 백업
+docker run --rm -v mydata:/data -v $(pwd):/backup ubuntu \
+  tar czf /backup/mydata-backup.tar.gz -C /data .
+
+# 백업 파일로 복원
+docker run --rm -v mydata:/data -v $(pwd):/backup ubuntu \
+  tar xzf /backup/mydata-backup.tar.gz -C /data
+```
+
+이런 방식으로 임시 컨테이너를 이용해 볼륨 내용을 압축 백업하고, 필요 시
+복원할 수 있다.
 
 ## 12) Git / GitHub 제출
 
 변경 사항 스테이징 및 커밋
+
 ```bash
 [user]@[host] Codyssey_1 % git add .
 [user]@[host] Codyssey_1 % git commit -m "mission 1 upload"
@@ -647,6 +811,7 @@ hi
 ```
 
 GitHub 원격 저장소에 push
+
 ```bash
 [user]@[host] Codyssey_1 % git push origin main
 오브젝트 나열하는 중: 24, 완료.
@@ -662,26 +827,37 @@ To https://github.com/segretoo/Codyssey_1.git
 
 - GitHub Repository 링크: https://github.com/segretoo/Codyssey_1
 
+### 참고: Git과 GitHub의 역할 차이
+
+- **Git**: 내 컴퓨터에서 파일 변경 이력을 관리하는 로컬 버전관리 도구.
+  인터넷 연결 없이도 `commit`으로 스냅샷을 저장하고 이전 상태로 되돌릴 수 있다.
+- **GitHub**: Git 저장소를 인터넷에 올려서 백업하고, 다른 사람과 공유·협업할 수
+  있게 해주는 원격 플랫폼. `push`/`pull` 명령으로 로컬(Git)과 원격(GitHub)을
+  동기화한다.
+- 이 실습에서는 로컬에서 `git commit`으로 변경 이력을 기록하고, `git push`로
+  GitHub에 올려 평가자가 저장소 링크만으로 전체 내용을 확인할 수 있게 했다.
+  이 과정 자체가 Git(로컬 버전관리)과 GitHub(원격 협업 플랫폼)의 역할 차이를
+  보여주는 실습이었다.
 
 ## 13) 검증 방법 요약
 
 아래는 각 수행 항목을 어떤 명령으로 검증했고, 그 결과를 README의 어느 섹션에서
 확인할 수 있는지 정리한 표이다.
 
-| 항목 | 검증 내용 | 검증 명령 | 결과 위치 |
-|---|---|---|---|
-| 터미널 조작 | 폴더 이동/생성/복사/이름변경/삭제가 정상 동작하는지 | `pwd`, `ls -la`, `mkdir`, `cp`, `mv`, `rm` 등 | 3번 섹션 |
-| 권한 변경 | chmod 전/후 권한 비트가 실제로 바뀌었는지 | `chmod`, `ls -l` / `ls -ld` (전/후 비교) | 4번 섹션 |
-| Docker 설치 | Docker 클라이언트/데몬이 정상 동작하는지 | `docker --version`, `docker info` | 5번 섹션 |
-| 이미지/컨테이너 관리 | 이미지 목록·컨테이너 상태를 조회할 수 있는지 | `docker images`, `docker ps -a` | 6번 섹션 |
-| hello-world 실행 | 컨테이너가 정상적으로 실행되고 종료되는지 | `docker run hello-world` | 7번 섹션 |
-| 커스텀 이미지 빌드/실행 | 직접 작성한 Dockerfile로 이미지가 빌드되고 컨테이너가 뜨는지 | `docker build`, `docker run` | 8번 섹션 |
-| 포트 매핑 | 호스트 포트로 컨테이너 내부 서비스에 접속되는지 (2회 이상) | `curl http://localhost:8080`, `:8081` | 9번 섹션 |
-| 바인드 마운트 | 로컬 파일 수정이 재시작 없이 컨테이너에 반영되는지 | `curl http://localhost:8082` (수정 전/후) | 10번 섹션 |
-| 볼륨 영속성 | 컨테이너 삭제 후에도 볼륨 데이터가 유지되는지 | 삭제 전/후 `cat /data/hello.txt` 비교 | 11번 섹션 |
-
+| 항목                    | 검증 내용                                                    | 검증 명령                                     | 결과 위치 |
+| ----------------------- | ------------------------------------------------------------ | --------------------------------------------- | --------- |
+| 터미널 조작             | 폴더 이동/생성/복사/이름변경/삭제가 정상 동작하는지          | `pwd`, `ls -la`, `mkdir`, `cp`, `mv`, `rm` 등 | 3번 섹션  |
+| 권한 변경               | chmod 전/후 권한 비트가 실제로 바뀌었는지                    | `chmod`, `ls -l` / `ls -ld` (전/후 비교)      | 4번 섹션  |
+| Docker 설치             | Docker 클라이언트/데몬이 정상 동작하는지                     | `docker --version`, `docker info`             | 5번 섹션  |
+| 이미지/컨테이너 관리    | 이미지 목록·컨테이너 상태를 조회할 수 있는지                 | `docker images`, `docker ps -a`               | 6번 섹션  |
+| hello-world 실행        | 컨테이너가 정상적으로 실행되고 종료되는지                    | `docker run hello-world`                      | 7번 섹션  |
+| 커스텀 이미지 빌드/실행 | 직접 작성한 Dockerfile로 이미지가 빌드되고 컨테이너가 뜨는지 | `docker build`, `docker run`                  | 8번 섹션  |
+| 포트 매핑               | 호스트 포트로 컨테이너 내부 서비스에 접속되는지 (2회 이상)   | `curl http://localhost:8080`, `:8081`         | 9번 섹션  |
+| 바인드 마운트           | 로컬 파일 수정이 재시작 없이 컨테이너에 반영되는지           | `curl http://localhost:8082` (수정 전/후)     | 10번 섹션 |
+| 볼륨 영속성             | 컨테이너 삭제 후에도 볼륨 데이터가 유지되는지                | 삭제 전/후 `cat /data/hello.txt` 비교         | 11번 섹션 |
 
 ## 14) 주의사항 / 재현성 노트
+
 - 본인 PC 환경에 종속된 경로(예: 홈 디렉토리 절대경로)가 있다면 여기에 대체 방법을 기재한다.
 - 민감정보(비밀번호, 토큰, 개인정보 등)는 캡처/로그에서 마스킹 처리했다.
 - 본 문서의 절대경로(`/Users/[user]/Desktop/Codyssey_1`)는 실습자 개인 환경 경로이며,
@@ -692,6 +868,7 @@ To https://github.com/segretoo/Codyssey_1.git
 ### 1) zsh 히스토리 확장(`!`) 에러
 
 **문제**
+
 ```bash
 [user]@[host] Codyssey_1 % echo "<h1>bind mount updated!</h1>" > bindtest/index.html
 zsh: event not found: </h1>
@@ -706,6 +883,7 @@ zsh: event not found: </h1>
 `!`가 포함된 문자열(`updated!`)에서만 에러가 발생하는 것을 비교하여 원인을 특정했다.
 
 **해결**: 작은따옴표(`'`)로 감싸면 셸이 내부 문자를 특수문자로 해석하지 않는다.
+
 ```bash
 [user]@[host] Codyssey_1 % echo '<h1>bind mount updated!</h1>' > bindtest/index.html
 [user]@[host] Codyssey_1 % curl http://localhost:8082
@@ -715,6 +893,7 @@ zsh: event not found: </h1>
 ### 2) Git push non-fast-forward 충돌
 
 **문제**
+
 ```bash
 [user]@[host] Codyssey_1 % git push origin main
  ! [rejected]        main -> main (non-fast-forward)
@@ -727,33 +906,38 @@ hint: its remote counterpart.
 갈라져(diverged) 있어, 로컬 브랜치가 원격보다 최신이 아닌 상태였다.
 
 **확인**
+
 ```bash
 [user]@[host] Codyssey_1 % git status
 현재 브랜치와 'origin/main'이(가) 갈라졌습니다,
 다른 커밋이 각각 2개와 1개 있습니다.
 ```
+
 `git status`로 로컬 2개, 원격 1개의 서로 다른 커밋이 있음을 확인했다.
 
 **해결**: `git pull`로 원격 커밋을 먼저 병합한 뒤 재시도했다.
+
 ```bash
 [user]@[host] Codyssey_1 % git pull origin main --no-rebase
 [user]@[host] Codyssey_1 % git push origin main
 ```
-→ 병합(merge) 방식으로 두 이력을 합친 뒤 push가 정상적으로 성공했다.
 
+→ 병합(merge) 방식으로 두 이력을 합친 뒤 push가 정상적으로 성공했다.
 
 ## 15) 보너스 1 — Docker Compose 기초 (단일 서비스)
 
 docker-compose.yml 작성
+
 ```yaml
 services:
-  web:
-    build: .
-    ports:
-      - "8083:80"
+    web:
+        build: .
+        ports:
+            - '8083:80'
 ```
 
 Compose로 빌드 및 실행
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose up -d
 [+] Building 0.9s (9/9) FINISHED
@@ -768,6 +952,7 @@ Compose로 빌드 및 실행
 ```
 
 실행 상태 및 접속 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose ps
 NAME               IMAGE            COMMAND                   SERVICE   CREATED          STATUS         PORTS
@@ -776,6 +961,7 @@ codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       10 seco
 [user]@[host] Codyssey_1 % curl http://localhost:8083
 <h1>Hello from my custom nginx</h1>
 ```
+
 ![8083 포트 Compose 접속 화면](./evidence/port-8083.png)
 
 → `docker run` 대신 `docker-compose.yml`이라는 문서화된 설정 파일 하나로
@@ -785,22 +971,25 @@ codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       10 seco
 ## 16) 보너스 4 — 환경 변수 활용
 
 .env 파일로 호스트 포트 분리
+
 ```bash
 [user]@[host] Codyssey_1 % echo "HOST_PORT=8083" > .env
 ```
 
 docker-compose.yml에서 포트를 환경변수로 참조
+
 ```yaml
 services:
-  web:
-    build: .
-    ports:
-      - "${HOST_PORT}:80"
-    environment:
-      - APP_ENV=dev
+    web:
+        build: .
+        ports:
+            - '${HOST_PORT}:80'
+        environment:
+            - APP_ENV=dev
 ```
 
 1차: HOST_PORT=8083으로 재실행 및 접속 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose down
 [+] Running 2/2
@@ -819,9 +1008,11 @@ codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       5 secon
 [user]@[host] Codyssey_1 % curl http://localhost:8083
 <h1>Hello from my custom nginx</h1>
 ```
+
 ![8083 포트 접속 화면](./evidence/port-8083.png)
 
 2차: .env 값만 8084로 변경 후 재실행 (코드는 그대로, 설정만 변경)
+
 ```bash
 [user]@[host] Codyssey_1 % echo "HOST_PORT=8084" > .env
 [user]@[host] Codyssey_1 % docker compose down
@@ -841,6 +1032,7 @@ codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       5 secon
 [user]@[host] Codyssey_1 % curl http://localhost:8084
 <h1>Hello from my custom nginx</h1>
 ```
+
 ![8084 포트 접속 화면](./evidence/port-8084.png)
 
 → `docker-compose.yml` 코드는 전혀 건드리지 않고 `.env`의 `HOST_PORT` 값만
@@ -854,6 +1046,7 @@ codyssey_1-web-1   codyssey_1-web   "/docker-entrypoint.…"   web       5 secon
 (설정 변경 후 재시작하는 흐름에서 반복 활용).
 
 컨테이너 로그 확인
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose logs
 web-1  | /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
@@ -867,7 +1060,7 @@ web-1  | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-pr
 web-1  | /docker-entrypoint.sh: Configuration complete; ready for start up
 web-1  | 2026/07/28 09:14:29 [notice] 1#1: using the "epoll" event method
 web-1  | 2026/07/28 09:14:29 [notice] 1#1: nginx/1.31.3
-web-1  | 2026/07/28 09:14:29 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0) 
+web-1  | 2026/07/28 09:14:29 [notice] 1#1: built by gcc 15.2.0 (Alpine 15.2.0)
 web-1  | 2026/07/28 09:14:29 [notice] 1#1: OS: Linux 6.17.8-orbstack-00308-g8f9c941121b1
 web-1  | 2026/07/28 09:14:29 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 20480:1048576
 web-1  | 2026/07/28 09:14:29 [notice] 1#1: start worker processes
@@ -890,39 +1083,43 @@ web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:10 +0000] "GET /favicon.ico HTTP/1.
 web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET / HTTP/1.1" 200 36 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
 web-1  | 2026/07/28 09:15:14 [error] 33#33: *6 open() "/usr/share/nginx/html/favicon.ico" failed (2: No such file or directory), client: 192.168.97.1, server: localhost, request: "GET /favicon.ico HTTP/1.1", host: "localhost:8084", referrer: "http://localhost:8084/"
 web-1  | 192.168.97.1 - - [28/Jul/2026:09:15:14 +0000] "GET /favicon.ico HTTP/1.1" 404 555 "http://localhost:8084/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36" "-"
-[user]@[host] Codyssey_1 % 
+[user]@[host] Codyssey_1 %
 ```
+
 → `docker logs <컨테이너명>`과 달리 `docker compose logs`는 서비스 이름(`web-1`)이
 접두어로 붙어서 여러 서비스를 함께 운영할 때 로그 출처를 구분하기 쉬웠다. curl과
 브라우저로 접속했던 요청 기록(200 응답)이 그대로 남아있는 것을 확인했다.
 
 ### 운영 명령어 요약
-| 명령어 | 역할 | 확인 내용 |
-|---|---|---|
-| `docker compose up -d` | 서비스 시작(빌드+실행) | 15, 16번에서 사용 |
-| `docker compose down` | 서비스 종료(컨테이너+네트워크 정리) | 16번에서 사용 |
-| `docker compose ps` | 서비스 상태 확인 | 15, 16번에서 사용 |
-| `docker compose logs` | 서비스 로그 확인 | 위에서 확인 |
+
+| 명령어                 | 역할                                | 확인 내용         |
+| ---------------------- | ----------------------------------- | ----------------- |
+| `docker compose up -d` | 서비스 시작(빌드+실행)              | 15, 16번에서 사용 |
+| `docker compose down`  | 서비스 종료(컨테이너+네트워크 정리) | 16번에서 사용     |
+| `docker compose ps`    | 서비스 상태 확인                    | 15, 16번에서 사용 |
+| `docker compose logs`  | 서비스 로그 확인                    | 위에서 확인       |
 
 ## 18) 보너스 2 — Docker Compose 멀티 컨테이너
 
 docker-compose.yml에 웹 서버(web) + 보조 서비스(cache, redis) 추가
+
 ```yaml
 services:
-  web:
-    build: .
-    ports:
-      - "${HOST_PORT}:80"
-    environment:
-      - APP_ENV=dev
-    depends_on:
-      - cache
+    web:
+        build: .
+        ports:
+            - '${HOST_PORT}:80'
+        environment:
+            - APP_ENV=dev
+        depends_on:
+            - cache
 
-  cache:
-    image: redis:alpine
+    cache:
+        image: redis:alpine
 ```
 
 두 서비스 함께 실행
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose down
 [+] Running 2/2
@@ -941,6 +1138,7 @@ services:
 ```
 
 컨테이너 간 네트워크 통신 확인 (web → cache)
+
 ```bash
 [user]@[host] Codyssey_1 % docker compose exec web sh
 / # ping -c 3 cache
@@ -960,10 +1158,10 @@ round-trip min/avg/max = 0.060/0.080/0.112 ms
 네트워크에 묶어주고, 컨테이너 IP를 직접 몰라도 서비스 이름으로 서로 찾을 수
 있게 해주는 서비스 디스커버리 기능을 체감했다.
 
-
 ## 19) 보너스 5 — GitHub SSH 키 설정
 
 기존 SSH 키 확인 (없음 확인)
+
 ```bash
 [user]@[host] Codyssey_1 % ls -al ~/.ssh
 total 8
@@ -973,12 +1171,13 @@ drwxr-x---+ 24 [user]  [user]  768  7 28 17:47 ..
 ```
 
 새 SSH 키 생성
+
 ```bash
 [user]@[host] Codyssey_1 % ssh-keygen -t ed25519 -C "segreto8867@gmail.com"
 Generating public/private ed25519 key pair.
-Enter file in which to save the key (/Users/[user]/.ssh/id_ed25519): 
-Enter passphrase for "/Users/[user]/.ssh/id_ed25519" (empty for no passphrase): 
-Enter same passphrase again: 
+Enter file in which to save the key (/Users/[user]/.ssh/id_ed25519):
+Enter passphrase for "/Users/[user]/.ssh/id_ed25519" (empty for no passphrase):
+Enter same passphrase again:
 Your identification has been saved in /Users/[user]/.ssh/id_ed25519
 Your public key has been saved in /Users/[user]/.ssh/id_ed25519.pub
 The key fingerprint is:
@@ -986,6 +1185,7 @@ SHA256:ql4SK/RmwzbzJTkuFTjF/2Oho+yo4yXZsTqaF686pdY segreto8867@gmail.com
 ```
 
 SSH 에이전트에 키 등록
+
 ```bash
 [user]@[host] Codyssey_1 % eval "$(ssh-agent -s)"
 Agent pid 34799
@@ -994,12 +1194,14 @@ Identity added: /Users/[user]/.ssh/id_ed25519 (segreto8867@gmail.com)
 ```
 
 공개키 확인 후 GitHub(Settings → SSH and GPG keys)에 등록
+
 ```bash
 [user]@[host] Codyssey_1 % cat ~/.ssh/id_ed25519.pub
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFQkh+EtSTJmChudTSMyQE9In8ryE99SXpKRr4FRJdm9 segreto8867@gmail.com
 ```
 
 SSH 연결 테스트
+
 ```bash
 [user]@[host] Codyssey_1 % ssh -T git@github.com
 The authenticity of host 'github.com (20.200.245.247)' can't be established.
@@ -1010,6 +1212,7 @@ Hi segretoo! You've successfully authenticated, but GitHub does not provide shel
 ```
 
 원격 저장소 URL을 HTTPS → SSH로 전환
+
 ```bash
 [user]@[host] Codyssey_1 % git remote -v
 origin  https://github.com/segretoo/Codyssey_1.git (fetch)
@@ -1022,6 +1225,7 @@ origin  git@github.com:segretoo/Codyssey_1.git (push)
 ```
 
 SSH로 push 테스트
+
 ```bash
 [user]@[host] Codyssey_1 % git add .
 [user]@[host] Codyssey_1 % git commit -m "bonus: docker compose + ssh setup"
